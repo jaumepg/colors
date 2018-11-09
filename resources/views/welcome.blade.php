@@ -8,11 +8,36 @@
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" type="text/css">    <body>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="{{ URL::asset('js/app.js') }}"></script>
+        <link href="{{ URL::asset('css/app.css') }}" rel="stylesheet" type="text/css">
     </head>
-    <body>
-       
+   <body>
+
+       <div class="container content">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="text-center">Colors</h1>
+                </div>
+            </div>
+            <div class="row content">
+                <div class="col-md-6">
+                    <form id="submitform">
+                        @csrf
+                        <div class="form-group">
+                            <label for="exampleInputFile"  >File input</label>
+                            <input name='imageInput' type="file" accept="image/png, image/jpeg">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <img id="my_image" src="">
+                    <div id="color_result"  style=""></div>
+                </div>
+            </div>
+       </div>
     </body>
+
 </html>
