@@ -16,7 +16,7 @@ $( document ).ready(function() {
                     alert(result.msg);
                 }else{
                     $("#color_result").css({
-                        'background-color': result.color
+                        'background-color': result.color.hexa
                     });
                     $("#my_image").attr("src",result.img);
                 }

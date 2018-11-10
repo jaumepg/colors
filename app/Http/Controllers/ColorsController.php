@@ -18,13 +18,7 @@ class ColorsController extends Controller
 
     public function index(Request $request)
     {
-        
-        $porcent = 0;
-        $win = array();
-        $rTotal = 0;
-        $gTotal = 0;
-        $bTotal = 0;
-        $total = 0;
+                
         
         $img = $this->saveImage($request);
         
@@ -46,47 +40,17 @@ class ColorsController extends Controller
             $image = imagecreatefrompng ($ruta);
         }
         
-        $data = array(
-                'status' => 'success',
-                'color'   => '#FFFF00',
-                'img' => $img
-            );
-        return $data;
-
+        $this->calculateRGBImg($image);
         
-        for ($x=0;$x<imagesx($image);$x++) {
-            for ($y=0;$y<imagesy($image);$y++) {
-                $rgb = imagecolorat($image,$x,$y);
-                $r   = ($rgb >> 16) & 0xFF;
-                $g   = ($rgb >> 8) & 0xFF;
-                $b   = $rgb & 0xFF;
-                $rTotal += $r;
-                $gTotal += $g;
-                $bTotal += $b;
-                $total++;
-            }
-        }
-        $rPromedio = round($rTotal/$total);
-        $gPromedio = round($gTotal/$total);
-        $bPromedio = round($bTotal/$total);
+        $color = $this->desviationColor();
 
-
-        echo "<div style='height:50px;width:400px;background-color:rgb(".$rPromedio.",".$gPromedio.",".$bPromedio.")'></div>";
-
+       
+        return $data = array(
+            'status' => 'success',
+            'color'   => $color,
+            'img' => $img
+        );
         
-        foreach($this->colors as $hex => $color){
-             $rgb = $this->calcultaeRGB($hex);
-             $resultado =sqrt(($rgb['r']-$rPromedio)^2+($rgb['g']-$gPromedio)^2+($rgb['b']-$bPromedio)^2);
-             if($resultado > $porcent){
-                $porcent = $resultado; 
-                print_r($porcent.'-'.$color.'<br>');
-                $win = $rgb;
-            }
-            
-        }
-        echo "<div style='height:50px;width:400px;margin-bottom:15px;background-color:rgb(".$win['r'].",".$win['g'].",".$win['b']."')></div>";
-
-
     }
     
     //Funcion devuelve el color rgb del color hexadecimal
@@ -98,6 +62,55 @@ class ColorsController extends Controller
         $rgb['b'] = hexdec($length == 6 ? substr($hex, 4, 2) : ($length == 3 ? str_repeat(substr($hex, 2, 1), 2) : 0));
         
         return $rgb;
+    }
+    
+    //calcular la desviacion que hay entre la imagen y los colores
+    private function desviationColor(){
+        
+        $selectedColor =  array();
+        $deviation = PHP_INT_MAX;
+
+        foreach ($this->colors as $hex => $color) {
+            $hexademial = $this->calcultaeRGB($hex);
+            $curDev = $this->compareColors($this->rgb_img, $hexademial);
+            if ($curDev < $deviation) {
+                $deviation = $curDev;
+                $selectedColor = array ( 'color'=>$color,
+                    'hexa'=>'#'.$hex);  
+            }
+        }
+        
+        return $selectedColor;
+        
+    }
+    
+    //Color de la imagen que predomina más
+    private function calculateRGBImg($image){
+        
+        $rTotal = 0;
+        $gTotal = 0;
+        $bTotal = 0;
+        $total = 0;
+                
+        for ($x=0;$x<imagesx($image);$x++) {
+            for ($y=0;$y<imagesy($image);$y++) {
+                $rgb = imagecolorat($image,$x,$y);
+                $r   = ($rgb >> 16) & 0xFF;
+                $g   =  ($rgb >> 8) & 0xFF;
+                $b   = $rgb & 0xFF;
+                $rTotal += $r;
+                $gTotal += $g;
+                $bTotal += $b;
+                $total++;
+            }
+        }
+        $rAverage = round($rTotal/$total);
+        $gAverage = round($gTotal/$total);
+        $bAverage = round($bTotal/$total);
+        
+        $this->rgb_img['r'] = round($rTotal/$total);
+        $this->rgb_img['g'] = round($gTotal/$total);
+        $this->rgb_img['b'] = round($bTotal/$total);
     }
     
     //Guardar imagen devolver ubicacion guardada
@@ -115,7 +128,13 @@ class ColorsController extends Controller
         }
 
     }
-
+    
+    //Buscar el margen de diferencia entre imagen i color
+    private function compareColors($colorA, $colorB) {
+        return abs($colorA['r'] - $colorB['r']) + abs($colorA['g'] - $colorB['g']) + abs($colorA['b'] - $colorB['b']);
+    }
+    
+    //Inicializar colores
     private function inicialize_colors(){
         $this->colors = array(
             '00FFFF' => 'AQUA',
@@ -141,13 +160,3 @@ class ColorsController extends Controller
 
 
 }
-/*
- echo "<img src='".$ruta."' width='400' />";
-        echo "<div style='display:block;height:50px;width:400px;background-color:rgb(".$rPromedio.",".$gPromedio.",".$bPromedio.")'>";
-$resultado = imagecolorresolve ( $image , $rgb['r'] , $rgb['g'] , $rgb['b']);
-             print_r($resultado .' - '. $color.'<br>');
-            if($resultado > $porcent){
-                $porcent = $resultado; 
-                print_r($resultado .' - '. $color);
-                echo('<br>');
-            }*/
