@@ -123,12 +123,12 @@ class ColorsController extends Controller
         $deviation = PHP_INT_MAX;
 
         foreach ($this->colors as $hex => $color) {
-            $hexademial = $this->calcultaeRGB($hex);
+            $hexademial = $this->calculteRGB($hex);
             $curDev = $this->compareColors($this->rgb_img, $hexademial);
             if ($curDev < $deviation) {
                 $deviation = $curDev;
                 $selectedColor = array ( 'color'=>$color,
-                    'hexa'=>'#'.$hex);  
+                    'hexa'=>$hex);  
             }
         }
         
@@ -137,8 +137,9 @@ class ColorsController extends Controller
     }
     
     //Funcion devuelve el color rgb del color hexadecimal
-    private function calcultaeRGB ($hex){
-        $value = hexdec($hex);
+    private function calculteRGB ($hex){
+        
+        $hex = substr($hex, 1); 
         $length   = strlen($hex);
         $rgb['r'] = hexdec($length == 6 ? substr($hex, 0, 2) : ($length == 3 ? str_repeat(substr($hex, 0, 1), 2) : 0));
         $rgb['g'] = hexdec($length == 6 ? substr($hex, 2, 2) : ($length == 3 ? str_repeat(substr($hex, 1, 1), 2) : 0));
@@ -156,22 +157,22 @@ class ColorsController extends Controller
     //Inicializar colores
     private function inicialize_colors(){
         $this->colors = array(
-            '00FFFF' => 'AQUA',
-            '000000' => 'BLACK',
-            '0000FF' => 'BLUE',
-            'FF00FF' => 'FUCHSIA',
-            '808080' => 'GRAY',
-            '008000' => 'GREEN',
-            '00FF00' => 'LIME',
-            '800000' => 'MAROON',
-            '000080' => 'NAVY',
-            '808000' => 'OLIVE',
-            '800080' => 'PURPLE',
-            'FF0000' => 'RED',
-            'C0C0C0' => 'SILVER',
-            '008080' => 'TEAL',
-            'FFFFFF' => 'WHITE',
-            'FFFF00' => 'YELLOW'
+            '#00FFFF' => 'AQUA',
+            '#000000' => 'BLACK',
+            '#0000FF' => 'BLUE',
+            '#FF00FF' => 'FUCHSIA',
+            '#808080' => 'GRAY',
+            '#008000' => 'GREEN',
+            '#00FF00' => 'LIME',
+            '#800000' => 'MAROON',
+            '#000080' => 'NAVY',
+            '#808000' => 'OLIVE',
+            '#800080' => 'PURPLE',
+            '#FF0000' => 'RED',
+            '#C0C0C0' => 'SILVER',
+            '#008080' => 'TEAL',
+            '#FFFFFF' => 'WHITE',
+            '#FFFF00' => 'YELLOW'
         );
     }
 
