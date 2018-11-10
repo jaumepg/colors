@@ -8,7 +8,9 @@ class ColorsController extends Controller
 {
     
     private $colors = array();
-    var $rgb_img = array();
+    private $rgb_img = array();
+    private $image = '';
+    
     public function __construct(){
       
         //inicializamos los colores predeterminados
@@ -19,7 +21,6 @@ class ColorsController extends Controller
     public function index(Request $request)
     {
                 
-        
         $img = $this->saveImage($request);
         
         if(empty($img)){
@@ -29,18 +30,12 @@ class ColorsController extends Controller
             );
             return $data;
         }
-
-        $ruta = public_path($img);
         
-        $mime = mime_content_type($ruta);
+        $this->generateImg($img);
         
-        if($mime=="image/jpeg") {
-            $image = imagecreatefromjpeg ($ruta);
-        }else if($mime=="image/png"){
-            $image = imagecreatefrompng ($ruta);
-        }
+        $this->UnlinkImage($img);
         
-        $this->calculateRGBImg($image);
+        $this->calculateRGBImg();
         
         $color = $this->desviationColor();
 
@@ -48,50 +43,57 @@ class ColorsController extends Controller
         return $data = array(
             'status' => 'success',
             'color'   => $color,
-            'img' => $img
         );
         
     }
     
-    //Funcion devuelve el color rgb del color hexadecimal
-    private function calcultaeRGB ($hex){
-        $value = hexdec($hex);
-        $length   = strlen($hex);
-        $rgb['r'] = hexdec($length == 6 ? substr($hex, 0, 2) : ($length == 3 ? str_repeat(substr($hex, 0, 1), 2) : 0));
-        $rgb['g'] = hexdec($length == 6 ? substr($hex, 2, 2) : ($length == 3 ? str_repeat(substr($hex, 1, 1), 2) : 0));
-        $rgb['b'] = hexdec($length == 6 ? substr($hex, 4, 2) : ($length == 3 ? str_repeat(substr($hex, 2, 1), 2) : 0));
+    //Guardar imagen devolver ubicacion guardada
+    private function saveImage($request){
         
-        return $rgb;
+        $image = $request->file('imageInput');
+        if($image) {
+            $file_name = time() . $image->getClientOriginalName();
+            $filename = $image->getClientOriginalName();
+            $file_path = 'img/';
+            $image->move(public_path($file_path), $filename);
+            return $file_path.$filename;
+        }else{
+            return false;
+        }
+
     }
     
-    //calcular la desviacion que hay entre la imagen y los colores
-    private function desviationColor(){
         
-        $selectedColor =  array();
-        $deviation = PHP_INT_MAX;
-
-        foreach ($this->colors as $hex => $color) {
-            $hexademial = $this->calcultaeRGB($hex);
-            $curDev = $this->compareColors($this->rgb_img, $hexademial);
-            if ($curDev < $deviation) {
-                $deviation = $curDev;
-                $selectedColor = array ( 'color'=>$color,
-                    'hexa'=>'#'.$hex);  
-            }
+    //Generamos Imagen
+    private function generateImg($img){
+        
+        $ruta = public_path($img);
+        
+        $mime = mime_content_type($ruta);
+        
+        if($mime=="image/jpeg") {
+            $this->image = imagecreatefromjpeg ($ruta);
+        }else if($mime=="image/png"){
+            $this->image = imagecreatefrompng ($ruta);
         }
-        
-        return $selectedColor;
-        
+    }
+    
+    public static function UnlinkImage($file)
+    {
+        if (file_exists($file)) {
+           @unlink($file);
+        }
     }
     
     //Color de la imagen que predomina más
-    private function calculateRGBImg($image){
+    private function calculateRGBImg(){
         
         $rTotal = 0;
         $gTotal = 0;
         $bTotal = 0;
         $total = 0;
-                
+        $image = $this->image;
+        
         for ($x=0;$x<imagesx($image);$x++) {
             for ($y=0;$y<imagesy($image);$y++) {
                 $rgb = imagecolorat($image,$x,$y);
@@ -113,26 +115,43 @@ class ColorsController extends Controller
         $this->rgb_img['b'] = round($bTotal/$total);
     }
     
-    //Guardar imagen devolver ubicacion guardada
-    private function saveImage($request){
+    //calcular la desviacion que hay entre la imagen y los colores
+    //Menos desviacion más proximo al  los colores
+    private function desviationColor(){
         
-        $image = $request->file('imageInput');
-        if($image) {
-            $file_name = time() . $image->getClientOriginalName();
-            $filename = $image->getClientOriginalName();
-            $file_path = 'img/';
-            $image->move(public_path($file_path), $filename);
-            return $file_path.$filename;
-        }else{
-            return false;
-        }
+        $selectedColor =  array();
+        $deviation = PHP_INT_MAX;
 
+        foreach ($this->colors as $hex => $color) {
+            $hexademial = $this->calcultaeRGB($hex);
+            $curDev = $this->compareColors($this->rgb_img, $hexademial);
+            if ($curDev < $deviation) {
+                $deviation = $curDev;
+                $selectedColor = array ( 'color'=>$color,
+                    'hexa'=>'#'.$hex);  
+            }
+        }
+        
+        return $selectedColor;
+        
+    }
+    
+    //Funcion devuelve el color rgb del color hexadecimal
+    private function calcultaeRGB ($hex){
+        $value = hexdec($hex);
+        $length   = strlen($hex);
+        $rgb['r'] = hexdec($length == 6 ? substr($hex, 0, 2) : ($length == 3 ? str_repeat(substr($hex, 0, 1), 2) : 0));
+        $rgb['g'] = hexdec($length == 6 ? substr($hex, 2, 2) : ($length == 3 ? str_repeat(substr($hex, 1, 1), 2) : 0));
+        $rgb['b'] = hexdec($length == 6 ? substr($hex, 4, 2) : ($length == 3 ? str_repeat(substr($hex, 2, 1), 2) : 0));
+        
+        return $rgb;
     }
     
     //Buscar el margen de diferencia entre imagen i color
     private function compareColors($colorA, $colorB) {
         return abs($colorA['r'] - $colorB['r']) + abs($colorA['g'] - $colorB['g']) + abs($colorA['b'] - $colorB['b']);
     }
+
     
     //Inicializar colores
     private function inicialize_colors(){
