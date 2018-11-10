@@ -15,5 +15,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/getColor', 'ColorsController@index');
 Route::post('/getColor', 'ColorsController@index');
